@@ -43,9 +43,9 @@ namespace GzipComment {
         FileEncrypted = 5
     }
     /**
-     * 
+     *
      * Offset   Length   Contents
-     * 0      2 bytes  magic header  0x1f, 0x8b (\037 \213)  
+     * 0      2 bytes  magic header  0x1f, 0x8b (\037 \213)
   2      1 byte   compression method
                      0: store (copied)
                      1: compress
@@ -319,14 +319,27 @@ namespace GzipComment {
                 "bin/Debug/netcoreapp2.1/AssetManager.unitypackage"
             };*/
 
-            string file = args[args.Length - 1];
-            string outfile = file;
-            GzipHeader header = new GzipHeader(file);
-            UnityPackageDescription package = new UnityPackageDescription();
-            if(args.Length == 0 || !File.Exists(args[args.Length - 1])) {
-                Console.WriteLine("Usage: GzipComment (-p) /path/to/file.gz");
+            if (args.Length == 0 || !File.Exists(args[args.Length - 1]) || args[0] == "--help" || args[0] == "-h") {
+                Console.WriteLine("Usage: GzipComment (options) --file=/path/to/updated.unitypackage /path/to/file.gz");
+                Console.WriteLine("  Options:");
+                Console.WriteLine("    -p                   Print the file comment and quit");
+                Console.WriteLine("    --version=xyz        Set the version of the package to xyz");
+                Console.WriteLine("    --versionid=xyz      Set the version-id of the package to xyz");
+                Console.WriteLine("    --title=\"Some App\"   Sets the title of the package");
+                Console.WriteLine("    --id=xyz             Set the id of the package to xyz");
+                Console.WriteLine("    --pubdate=xyz        Set the version of the package to xyz ex \"15 Sept 2018\"");
+                Console.WriteLine("    --unityversion=xyz   Set the minimum unity version of the package to xyz");
+                Console.WriteLine("    --categoryid=xyz     Set the category id of the package to xyz");
+                Console.WriteLine("    --category=xyz       Set the version of the package to xyz ex \"Editor/Extensions\"");
+                Console.WriteLine("    --publisherid=xyz    Set the publisherid of the package to xyz");
+                Console.WriteLine("    --publisher=xyz      Set the version of the package to xyz");
+                Console.WriteLine("    --file=xyz           Set the path where the updated data will be written.");
                 return;
             }
+            string file = args[args.Length - 1];
+            string outfile = null;
+            GzipHeader header = new GzipHeader(file);
+            UnityPackageDescription package = new UnityPackageDescription();
             bool writeMetadata = false;
             foreach(string arg in args) {
                 if (arg == "--write-metadata") writeMetadata = true;
@@ -345,7 +358,8 @@ namespace GzipComment {
 
             if(args[0] == "-p") {
                 Console.WriteLine(header.FileComment);
-            } else {
+            } else if(null != file && file != outfile) {
+
                 if(writeMetadata) {
                     Console.WriteLine("Adding the following metadata: ");
                     Console.WriteLine(package.ToString());
