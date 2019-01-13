@@ -393,7 +393,12 @@ namespace UnityMetadataEditor {
                 try {
                     file.Save();
                 } catch (Exception err) {
-                    var result = MessageBox.Show(err.Message + "\n\nContinue saving remaining files?", "Save Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
+                    DialogResult result;
+                    if (modifiedFiles.Count > 1) {
+                        result = MessageBox.Show(err.Message + "\n\nContinue saving remaining files?", "Save Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
+                    } else {
+                        result = MessageBox.Show(err.Message, "Save Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
+                    }
                     if(result == DialogResult.Cancel) {
                         break;
                     }
@@ -404,6 +409,8 @@ namespace UnityMetadataEditor {
             foreach(UnityPackageFile file in openFiles.Values) {
                 if (file.Modified) modifiedFiles.Add(file);
             }
+
+            UpdateFileList();
         }
     }
 }

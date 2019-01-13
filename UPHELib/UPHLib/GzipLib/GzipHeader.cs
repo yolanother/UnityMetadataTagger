@@ -209,14 +209,14 @@ namespace UPHLib.GzipLib {
             stream.Write(fileModification, 0, 4);
             stream.WriteByte((byte)extraFlags);
             stream.WriteByte((byte)osType);
-            if ((flags & GzipHeaderFlags.Crc) > 0) {
+            if ((FlagByte & (byte) GzipHeaderFlags.Crc) > 0) {
                 stream.Write(optionalPartNumber, 0, 2);
             }
-            if ((flags & GzipHeaderFlags.ExtraFieldPresent) > 0) {
+            if ((FlagByte & (byte) GzipHeaderFlags.ExtraFieldPresent) > 0) {
                 stream.Write(BitConverter.GetBytes(optionalExtraField.Length), 0, 2);
                 stream.Write(optionalExtraField, 0, optionalExtraField.Length);
             }
-            if ((flags & GzipHeaderFlags.OriginalFileNamePresent) > 0) {
+            if ((FlagByte & (byte) GzipHeaderFlags.OriginalFileNamePresent) > 0) {
                 byte[] ofnBytes = Encoding.UTF8.GetBytes(originalFileName);
                 stream.Write(ofnBytes, 0, ofnBytes.Length);
                 stream.WriteByte(0);
@@ -228,7 +228,7 @@ namespace UPHLib.GzipLib {
                 writeShort(stream, (short)comments.Length);
                 stream.Write(comments, 0, comments.Length);
             }
-            if ((flags & GzipHeaderFlags.FileEncrypted) > 0) {
+            if ((FlagByte & (byte) GzipHeaderFlags.FileEncrypted) > 0) {
                 stream.Read(encryptionHeader, 0, 12);
             }
         }
