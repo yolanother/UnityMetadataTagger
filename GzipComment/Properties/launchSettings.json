@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "GzipComment": {
+      "commandName": "Project",
+      "commandLineArgs": "--file=output.unitypackage --write-metadata test.unitypackage",
+      "workingDirectory": "E:\\workspace\\Unity\\UnityMetadataTagger"
+    }
+  }
+}

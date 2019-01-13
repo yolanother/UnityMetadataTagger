@@ -4,43 +4,44 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using SimpleJSON;
 
 namespace GzipComment {
     public enum OsType : byte {
-        Fat = 0x00,
-        Amiga = 0x01,
-        VMS = 0x02,
-        Unix = 0x03,
-        VMCMS = 0x04,
-        AtariTOS = 0x05,
-        HPFS = 0x06,
-        Macintosh = 0x07,
-        ZSystem = 0x08,
-        CPM = 0x09,
-        TOPS20 = 0x0a,
-        NTFS = 0x0b,
-        QDOS = 0x0c,
+        Fat         = 0x00,
+        Amiga       = 0x01,
+        VMS         = 0x02,
+        Unix        = 0x03,
+        VMCMS       = 0x04,
+        AtariTOS    = 0x05,
+        HPFS        = 0x06,
+        Macintosh   = 0x07,
+        ZSystem     = 0x08,
+        CPM         = 0x09,
+        TOPS20      = 0x0a,
+        NTFS        = 0x0b,
+        QDOS        = 0x0c,
         AcornRISCOS = 0x0d,
-        Unknown = 0xff
+        Unknown     = 0xff
     }
 
     [Flags]
     public enum CompressionMethod : byte {
-        Store = 0,
-        Compress = 1,
-        Pack = 2,
-        Lzh = 3,
-        deflate = 8
+        Store       = 0x00,
+        Compress    = 0x01,
+        Pack        = 0x02,
+        Lzh         = 0x04,
+        deflate     = 0x08
     }
 
     [Flags]
     public enum Flags: byte {
-        Ascii = 0,
-        PartNumberPresent = 1,
-        ExtraFieldPresent = 2,
-        OriginalFileNamePresent = 3,
-        FileCommentPresent = 4,
-        FileEncrypted = 5
+        Ascii                   = 0x01,
+        Crc                     = 0x02,
+        ExtraFieldPresent       = 0x04,
+        OriginalFileNamePresent = 0x08,
+        FileCommentPresent      = 0x10,
+        FileEncrypted           = 0x20
     }
     /**
      *
@@ -93,7 +94,7 @@ namespace GzipComment {
         public OsType osType;
         byte[] optionalPartNumber = new byte[2];
         byte[] optionalExtraFieldLength = new byte[2];
-        byte[] optionalExtraField;
+        byte[] optionalExtraField = new byte[0];
         string originalFileName = "";
         string fileComment = "";
         byte[] encryptionHeader = new byte[12];
@@ -123,6 +124,22 @@ namespace GzipComment {
             }
         }
 
+        public string ExtraFieldAsString {
+            get {
+                if (optionalExtraField.Length == 0 || optionalExtraField.Length < 6) return "";
+                return Encoding.UTF8.GetString(optionalExtraField, 4, optionalExtraField.Length - 4);
+            } set {
+                byte[] encoded = Encoding.UTF8.GetBytes(value);
+                optionalExtraField = new byte[encoded.Length + 4];
+                Array.Copy(encoded, 0, optionalExtraField, 4, encoded.Length);
+                // Two magic bytes that I'm not sure of the meaning of. I'm assuming character encoding?
+                // They appear to be thesame for all packages I've looked at so far.
+                optionalExtraField[0] = 0x41;
+                optionalExtraField[1] = 0x24;
+                Array.Copy(BitConverter.GetBytes(optionalExtraField.Length - 4), 0, optionalExtraField, 2, 2);
+            }
+        }
+
         private void writeShort(Stream stream, short s) {
             stream.Write(BitConverter.GetBytes(s));
         }
@@ -140,16 +157,16 @@ namespace GzipComment {
         }
 
         public GzipHeader(string file) {
-            using (Stream stream = File.OpenRead(file)) {
+            using (Stream stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
                 byte[] buffer = new byte[2048];
                 int read;
                 read = stream.Read(magic, 0, 2);
-                compressionMethod = (CompressionMethod) stream.ReadByte();
+                compressionMethod = (CompressionMethod)stream.ReadByte();
                 flags = (Flags)stream.ReadByte();
                 stream.Read(fileModification, 0, 4);
                 extraFlags = (byte)stream.ReadByte();
                 osType = (OsType)stream.ReadByte();
-                if ((flags & Flags.PartNumberPresent) > 0) {
+                if ((flags & Flags.Crc) > 0) {
                     stream.Read(optionalPartNumber, 0, 2);
                 }
                 if ((flags & Flags.ExtraFieldPresent) > 0) {
@@ -173,6 +190,15 @@ namespace GzipComment {
             }
         }
 
+        private byte FlagByte {
+            get {
+                byte flagByte = (byte)flags;
+                flagByte |= (byte)(FileComment.Length > 0 ? flags | Flags.FileCommentPresent : flags & ~Flags.FileCommentPresent);
+                flagByte |= (byte)(optionalExtraField.Length > 0 ? flags | Flags.ExtraFieldPresent : flags & ~Flags.ExtraFieldPresent);
+                return flagByte;
+            }
+        }
+
         private string ReadNullTerminatedString(Stream stream) {
             List<byte> list = new List<byte>();
             int b;
@@ -191,18 +217,16 @@ namespace GzipComment {
         internal void Write(Stream stream) {
             stream.Write(magic, 0, 2);
             stream.WriteByte((byte) compressionMethod);
-            stream.WriteByte((byte)(FileComment.Length > 0 ? flags | Flags.FileCommentPresent : flags & ~Flags.FileCommentPresent));
+            stream.WriteByte(FlagByte);
             stream.Write(fileModification, 0, 4);
-            stream.WriteByte(extraFlags);
+            stream.WriteByte((byte) extraFlags);
             stream.WriteByte((byte)osType);
-            stream.Write(optionalPartNumber, 0, 2);
-            if ((flags & Flags.PartNumberPresent) > 0) {
+            if ((flags & Flags.Crc) > 0) {
                 stream.Write(optionalPartNumber, 0, 2);
             }
             if ((flags & Flags.ExtraFieldPresent) > 0) {
-                stream.Write(optionalExtraFieldLength, 0, 2);
-                optionalExtraField = new byte[OptionalExtraFieldLength];
-                stream.Write(optionalExtraField, 0, OptionalExtraFieldLength);
+                stream.Write(BitConverter.GetBytes(optionalExtraField.Length), 0, 2);
+                stream.Write(optionalExtraField);
             }
             if ((flags & Flags.OriginalFileNamePresent) > 0) {
                 stream.Write(Encoding.UTF8.GetBytes(originalFileName));
@@ -221,104 +245,55 @@ namespace GzipComment {
         }
     }
 
-    class JsonData {
-        public override string ToString() {
-            FieldInfo[] fields = GetType().GetFields(
-            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-            string result = "";
-            foreach (FieldInfo field in fields) {
-                if (null != field.GetValue(this)) {
-                    string value = field.GetValue(this).ToString();
-                    if (value.Length > 0) {
-                        if (field.FieldType.IsSubclassOf(typeof(JsonData))) {
-                            if (value != "{}") {
-                                if (result.Length > 0) result += ",";
-                                result += '"' + field.Name + "\": " + value;
-                            }
-                        } else {
-                            if (result.Length > 0) result += ",";
-                            result += '"' + field.Name + "\": \"" + value.Replace("\\", "\\\\").Replace("\n", "\\\\n").Replace("\"", "\\\"") + "\"";
-                        }
+    class Program {
+        private static void setArg(JSONNode node, string path, string value) {
+            do {
+                int index = path.IndexOf('.');
+                index = index > 0 ? index : path.Length;
+                string key = path.Substring(0, index);
+                path = path.Substring(Math.Min(path.Length, index + 1));
+                if (node[key] == null) {
+                    if (path.Length == 0) {
+                        node.Add(key, new JSONString(value));
+                    } else {
+                        node.Add(key, new JSONObject());
                     }
                 }
-            }
-            return '{' + result + '}';
+                node = node[key];
+
+                if (path.Length == 0) {
+                    node.Value = value;
+                }
+            } while (path.Length > 0);
         }
-    }
 
-    class Link : JsonData {
-        public string id;
-        public string type;
-    }
+        static string packageArgument = "--package.";
+        private static void parseArg(string arg, JSONNode package) {
+            int eqIndex = arg.IndexOf("=");
+            if(arg.StartsWith(packageArgument) && eqIndex >= 0) {
+                string path = arg.Substring(packageArgument.Length, eqIndex - packageArgument.Length);
+                if (arg.Length > eqIndex + 1) {
+                    string value = arg.Substring(eqIndex + 1);
+                    setArg(package, path, value);
+                }
+            }
+        }
 
-    class Category : JsonData {
-        public string id;
-        public string label;
-    }
-
-    class Publisher : JsonData {
-        public string id;
-        public string label;
-    }
-
-    class UnityPackageDescription : JsonData {
-        public string version;
-        public string version_id;
-        public string title;
-        public string id;
-        public string unity_version;
-        public string pubdate;
-        public Category category = new Category();
-        public Publisher publisher = new Publisher();
-    }
-
-    /*
-     * {
-  "link": {
-    "id": "82022",
-    "type": "content"
-  },
-  "unity_version": "5.6.4p1-OC1",
-  "pubdate": "14 Sep 2018",
-  "version": "1.29",
-  "upload_id": "266944",
-  "version_id": "379637",
-  "category": {
-    "id": "112",
-    "label": "Scripting/Integration"
-  },
-  "id": "82022",
-  "title": "Oculus Integration",
-  "publisher": {
-    "id": "25353",
-    "label": "Oculus"
-  }
-}*/
-
-
-
-    class Program {
-        private static void parseArg(string arg, string type, ref string value) {
+        private static void parseArg(string arg, string type, JSONNode package, string path) {
             if(arg.StartsWith("--" + type + "=")) {
+                string value = arg.Substring(arg.IndexOf('=') + 1);
+                JSONNode node = package;
+                setArg(package, path, value);
+            }
+        }
+
+        private static void parseArg(string arg, string type, ref string value) {
+            if (arg.StartsWith("--" + type + "=")) {
                 value = arg.Substring(arg.IndexOf('=') + 1);
             }
         }
 
         static void Main(string[] args) {
-            /*args = new string[] {
-                "--write-metadata",
-                "--version=1.17",
-                "--versionid=1",
-                "--title=Asset Manager",
-                "--category=Editor/Extensions",
-                "--categoryid=100",
-                "--publisher=Doubling Technologies",
-                "--publisherid=101",
-                "--file=test.unitypackage",
-                "bin/Debug/netcoreapp2.1/AssetManager.unitypackage"
-            };*/
-
             if (args.Length == 0 || !File.Exists(args[args.Length - 1]) || args[0] == "--help" || args[0] == "-h") {
                 Console.WriteLine("Usage: GzipComment (options) --file=/path/to/updated.unitypackage /path/to/file.gz");
                 Console.WriteLine("  Options:");
@@ -333,48 +308,65 @@ namespace GzipComment {
                 Console.WriteLine("    --category=xyz       Set the version of the package to xyz ex \"Editor/Extensions\"");
                 Console.WriteLine("    --publisherid=xyz    Set the publisherid of the package to xyz");
                 Console.WriteLine("    --publisher=xyz      Set the version of the package to xyz");
+                Console.WriteLine("    --package.(path).(to).(node)=xyz      Set the value of a custom package node.");
+                Console.WriteLine("                         ex: --package.version=1.1 would match behavior of --version=1.1");
                 Console.WriteLine("    --file=xyz           Set the path where the updated data will be written.");
                 return;
             }
             string file = args[args.Length - 1];
             string outfile = null;
             GzipHeader header = new GzipHeader(file);
-            UnityPackageDescription package = new UnityPackageDescription();
+            JSONNode package = JSON.Parse(header.ExtraFieldAsString);
+            if(package == null) {
+                package = new JSONObject();
+            }
             bool writeMetadata = false;
+            bool print = false;
             foreach(string arg in args) {
                 if (arg == "--write-metadata") writeMetadata = true;
-                parseArg(arg, "version", ref package.version);
-                parseArg(arg, "versionid", ref package.version_id);
-                parseArg(arg, "title", ref package.title);
-                parseArg(arg, "id", ref package.id);
-                parseArg(arg, "pubdate", ref package.pubdate);
-                parseArg(arg, "unityversion", ref package.unity_version);
-                parseArg(arg, "categoryid", ref package.category.id);
-                parseArg(arg, "category", ref package.category.label);
-                parseArg(arg, "publisherid", ref package.publisher.id);
-                parseArg(arg, "publisher", ref package.publisher.label);
+                parseArg(arg, "version", package, "version");
+                parseArg(arg, "versionid", package, "version.id");
+                parseArg(arg, "title", package, "title");
+                parseArg(arg, "id", package, "id");
+                parseArg(arg, "pubdate", package, "pubdate");
+                parseArg(arg, "unityversion", package, "unity_version");
+                parseArg(arg, "categoryid", package, "category.id");
+                parseArg(arg, "category", package, "category.label");
+                parseArg(arg, "publisherid", package, "publisher.id");
+                parseArg(arg, "publisher", package, "publisher.label");
+                parseArg(arg, package);
                 parseArg(arg, "file", ref outfile);
+                if(arg == "-p") {
+                    print = true;
+                }
             }
 
-            if(args[0] == "-p") {
-                Console.WriteLine(header.FileComment);
+            if(print) {
+                Console.WriteLine("Package Header:");
+                Console.WriteLine(package.ToString());
             } else if(null != file && file != outfile) {
-
-                if(writeMetadata) {
+                header.ExtraFieldAsString = package.ToString();
+                if (writeMetadata) {
                     Console.WriteLine("Adding the following metadata: ");
                     Console.WriteLine(package.ToString());
-                    header.FileComment = package.ToString();
-                }
-                using(Stream infile = File.OpenRead(file)) {
-                    infile.Position = header.headerLength;
-                    using(Stream of = File.OpenWrite(outfile)) {
-                        header.Write(of);
-                        byte[] buffer = new byte[4096];
-                        int read;
-                        while((read = infile.Read(buffer, 0, buffer.Length)) > 0) {
-                            of.Write(buffer, 0, read);
+                    using (Stream infile = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
+                        infile.Position = header.headerLength;
+                        if(File.Exists(outfile)) {
+                            File.Delete(outfile);
+                        }
+
+                        using (Stream of = File.OpenWrite(outfile)) {
+                            header.Write(of);
+                            byte[] buffer = new byte[4096];
+                            int read;
+                            while ((read = infile.Read(buffer, 0, buffer.Length)) > 0) {
+                                of.Write(buffer, 0, read);
+                            }
                         }
                     }
+                } else {
+                    Console.WriteLine("Updated metadata preview: ");
+                    Console.WriteLine(header.ExtraFieldAsString);
                 }
             }
         }
