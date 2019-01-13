@@ -268,7 +268,8 @@ namespace UnityMetadataEditor {
         }
 
         private void LstOpenFiles_SelectedValueChanged(object sender, System.EventArgs e) {
-            if(null != lstOpenFiles.SelectedItem) {
+            modifiedFields.Clear();
+            if (null != lstOpenFiles.SelectedItem) {
                 EditHeader((UnityPackageFile) lstOpenFiles.SelectedItem);
             }
         }
