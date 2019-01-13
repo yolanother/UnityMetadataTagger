@@ -40,7 +40,7 @@ namespace UnityMetadataEditor {
                         if (!string.IsNullOrEmpty(header["title"])) {
                             name = this.header["title"];
                         }
-                        if (null != header["version"]) {
+                        if (!string.IsNullOrEmpty(header["version"])) {
                             name += " [" + header["version"] + "]";
                         }
                     }
@@ -94,17 +94,31 @@ namespace UnityMetadataEditor {
                 if (Modified) {
                     string inputFile = File;
                     string tmpFile = inputFile + ".tmp";
-                    Header.UpdatePackageFile(inputFile, inputFile);
+                    Header.UpdatePackageFile(inputFile, tmpFile);
 
-                    string outfile = File.Substring(0, File.Length - PACKAGE_EXTENSION.Length);
-                    if (!string.IsNullOrEmpty(Header["version"])) {
-                        outfile += "-" + Header["version"];
+                    // Load header to make sure it is still parsable
+                    try {
+                        UnityPackageHeader updatedHeader = UnityPackageHeader.OpenPackage(tmpFile);
+                        string outfile = File.Substring(0, File.Length - PACKAGE_EXTENSION.Length);
+                        if (!string.IsNullOrEmpty(Header["version"]) && !outfile.Contains(Header["version"])) {
+                            outfile += "-" + Header["version"];
+                        }
+                        outfile += PACKAGE_EXTENSION;
+                        System.IO.File.Delete(inputFile);
+                        System.IO.File.Move(tmpFile, outfile);
+                        header = updatedHeader;
+                        Modified = false;
+                    } catch (Exception e) {
+                        if(System.IO.File.Exists(tmpFile)) {
+                            try {
+                                System.IO.File.Delete(tmpFile);
+                            } catch (IOException) {
+                                // We'll ignore the delete for now and let the user discover it.
+                                // Eventually we should add an additonal check or exception around this.
+                            }
+                        }
+                        throw e;
                     }
-                    outfile += PACKAGE_EXTENSION;
-                    System.IO.File.Delete(inputFile);
-                    System.IO.File.Move(tmpFile, outfile);
-                    LoadHeader();
-                    Modified = false;
                 }
             }
         }
@@ -169,14 +183,23 @@ namespace UnityMetadataEditor {
             UpdateFileList();
         }
 
-        private void OpenDirectory(string selectedPath, bool delayUpdate = false) {
+        private bool OpenDirectory(string selectedPath, bool delayUpdate = false) {
             foreach(string file in Directory.GetFiles(selectedPath, "*.unitypackage")) {
-                OpenUnityPackage(file, delayUpdate);
+                try {
+                    OpenUnityPackage(file, delayUpdate);
+                } catch (Exception e) {
+                    var result = MessageBox.Show(e.Message + "\n\nContinue loading remaining files?", "Load Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
+                    if (result == DialogResult.Cancel) {
+                        return false;
+                    }
+                }
             }
 
             foreach(string dir in Directory.GetDirectories(selectedPath)) {
-                OpenDirectory(dir);
+                if (!OpenDirectory(dir)) return false;
             }
+
+            return true;
         }
 
         private void AddUnityVersions(SortedSet<string> versions) {
@@ -366,11 +389,21 @@ namespace UnityMetadataEditor {
         }
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e) {
-            foreach(UnityPackageFile file in modifiedFiles) {
-                file.Save();
+            foreach (UnityPackageFile file in modifiedFiles) {
+                try {
+                    file.Save();
+                } catch (Exception err) {
+                    var result = MessageBox.Show(err.Message + "\n\nContinue saving remaining files?", "Save Error!", MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
+                    if(result == DialogResult.Cancel) {
+                        break;
+                    }
+                }
             }
 
             modifiedFiles.Clear();
+            foreach(UnityPackageFile file in openFiles.Values) {
+                if (file.Modified) modifiedFiles.Add(file);
+            }
         }
     }
 }

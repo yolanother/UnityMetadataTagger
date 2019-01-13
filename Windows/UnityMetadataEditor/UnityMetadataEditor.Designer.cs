@@ -160,7 +160,7 @@
             this.groupBox1.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(2);
-            this.groupBox1.Size = new System.Drawing.Size(566, 398);
+            this.groupBox1.Size = new System.Drawing.Size(561, 398);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Package Information";
@@ -184,7 +184,7 @@
             this.txtPackageDesc.Margin = new System.Windows.Forms.Padding(2);
             this.txtPackageDesc.Multiline = true;
             this.txtPackageDesc.Name = "txtPackageDesc";
-            this.txtPackageDesc.Size = new System.Drawing.Size(473, 343);
+            this.txtPackageDesc.Size = new System.Drawing.Size(468, 343);
             this.txtPackageDesc.TabIndex = 6;
             this.txtPackageDesc.Tag = "description";
             this.txtPackageDesc.TextChanged += new System.EventHandler(this.OnFieldModified);
@@ -206,7 +206,7 @@
             this.txtPackageTitle.Location = new System.Drawing.Point(201, 27);
             this.txtPackageTitle.Margin = new System.Windows.Forms.Padding(2);
             this.txtPackageTitle.Name = "txtPackageTitle";
-            this.txtPackageTitle.Size = new System.Drawing.Size(361, 20);
+            this.txtPackageTitle.Size = new System.Drawing.Size(356, 20);
             this.txtPackageTitle.TabIndex = 4;
             this.txtPackageTitle.Tag = "title";
             this.txtPackageTitle.TextChanged += new System.EventHandler(this.OnFieldModified);
@@ -246,7 +246,7 @@
             this.groupBox2.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Padding = new System.Windows.Forms.Padding(2);
-            this.groupBox2.Size = new System.Drawing.Size(480, 66);
+            this.groupBox2.Size = new System.Drawing.Size(481, 66);
             this.groupBox2.TabIndex = 2;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Version Information";
@@ -301,7 +301,7 @@
             this.txtVersionUnity.Location = new System.Drawing.Point(413, 16);
             this.txtVersionUnity.Margin = new System.Windows.Forms.Padding(2);
             this.txtVersionUnity.Name = "txtVersionUnity";
-            this.txtVersionUnity.Size = new System.Drawing.Size(63, 21);
+            this.txtVersionUnity.Size = new System.Drawing.Size(64, 21);
             this.txtVersionUnity.TabIndex = 2;
             this.txtVersionUnity.Tag = "unity_version";
             this.txtVersionUnity.TextChanged += new System.EventHandler(this.OnFieldModified);
@@ -380,7 +380,7 @@
             // btnApply
             //
             this.btnApply.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnApply.Location = new System.Drawing.Point(494, 24);
+            this.btnApply.Location = new System.Drawing.Point(495, 24);
             this.btnApply.Name = "btnApply";
             this.btnApply.Size = new System.Drawing.Size(75, 23);
             this.btnApply.TabIndex = 6;
@@ -400,7 +400,7 @@
             this.groupBox4.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Padding = new System.Windows.Forms.Padding(2);
-            this.groupBox4.Size = new System.Drawing.Size(566, 46);
+            this.groupBox4.Size = new System.Drawing.Size(563, 46);
             this.groupBox4.TabIndex = 5;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Publisher";
@@ -412,7 +412,7 @@
             this.txtPublisherLabel.Location = new System.Drawing.Point(147, 16);
             this.txtPublisherLabel.Margin = new System.Windows.Forms.Padding(2);
             this.txtPublisherLabel.Name = "txtPublisherLabel";
-            this.txtPublisherLabel.Size = new System.Drawing.Size(415, 20);
+            this.txtPublisherLabel.Size = new System.Drawing.Size(412, 20);
             this.txtPublisherLabel.TabIndex = 4;
             this.txtPublisherLabel.Tag = "publisher.label";
             this.txtPublisherLabel.TextChanged += new System.EventHandler(this.OnFieldModified);
@@ -459,7 +459,7 @@
             this.groupBox3.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Padding = new System.Windows.Forms.Padding(2);
-            this.groupBox3.Size = new System.Drawing.Size(566, 43);
+            this.groupBox3.Size = new System.Drawing.Size(561, 43);
             this.groupBox3.TabIndex = 4;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Category";
@@ -471,7 +471,7 @@
             this.txtCategoryLabel.Location = new System.Drawing.Point(147, 16);
             this.txtCategoryLabel.Margin = new System.Windows.Forms.Padding(2);
             this.txtCategoryLabel.Name = "txtCategoryLabel";
-            this.txtCategoryLabel.Size = new System.Drawing.Size(416, 20);
+            this.txtCategoryLabel.Size = new System.Drawing.Size(411, 20);
             this.txtCategoryLabel.TabIndex = 4;
             this.txtCategoryLabel.Tag = "category.label";
             this.txtCategoryLabel.TextChanged += new System.EventHandler(this.OnFieldModified);
