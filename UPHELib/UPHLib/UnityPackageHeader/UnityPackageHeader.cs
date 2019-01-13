@@ -102,7 +102,7 @@ namespace UPHLib {
         public string this[string path] {
             get {
                 JSONNode node = GetNode(path);
-                return node?.Value;
+                return node?.Value ?? "";
             } set {
                 SetNodeValue(path, value);
             }

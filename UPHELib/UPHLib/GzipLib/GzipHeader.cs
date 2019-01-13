@@ -129,7 +129,7 @@ namespace UPHLib.GzipLib {
         }
 
         private void writeShort(Stream stream, short s) {
-            stream.Write(BitConverter.GetBytes(s));
+            stream.Write(BitConverter.GetBytes(s), 0, 2);
         }
 
         private short readShort(Stream stream) {
@@ -214,10 +214,11 @@ namespace UPHLib.GzipLib {
             }
             if ((flags & GzipHeaderFlags.ExtraFieldPresent) > 0) {
                 stream.Write(BitConverter.GetBytes(optionalExtraField.Length), 0, 2);
-                stream.Write(optionalExtraField);
+                stream.Write(optionalExtraField, 0, optionalExtraField.Length);
             }
             if ((flags & GzipHeaderFlags.OriginalFileNamePresent) > 0) {
-                stream.Write(Encoding.UTF8.GetBytes(originalFileName));
+                byte[] ofnBytes = Encoding.UTF8.GetBytes(originalFileName);
+                stream.Write(ofnBytes, 0, ofnBytes.Length);
                 stream.WriteByte(0);
             }
             if (FileComment.Length > 0) {
@@ -225,7 +226,7 @@ namespace UPHLib.GzipLib {
                 writeShort(stream, (short)(comments.Length + 4));
                 writeShort(stream, 9281);
                 writeShort(stream, (short)comments.Length);
-                stream.Write(comments);
+                stream.Write(comments, 0, comments.Length);
             }
             if ((flags & GzipHeaderFlags.FileEncrypted) > 0) {
                 stream.Read(encryptionHeader, 0, 12);
