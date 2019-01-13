@@ -7,6 +7,8 @@
     <StartupObject />
     <RuntimeIdentifier>win7-x64</RuntimeIdentifier>
     <OutputType>Exe</OutputType>
+    <AssemblyName>uphe</AssemblyName>
+    <RootNamespace>UnityHeaderEditor</RootNamespace>
   </PropertyGroup>
 
 </Project>
