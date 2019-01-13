@@ -55,7 +55,7 @@ namespace GzipComment {
 
         static void Main(string[] args) {
             if (args.Length == 0 || !File.Exists(args[args.Length - 1]) || args[0] == "--help" || args[0] == "-h") {
-                Console.WriteLine("Usage: GzipComment (options) --file=/path/to/updated.unitypackage /path/to/file.gz");
+                Console.WriteLine("Usage: uphe (options) --file=/path/to/updated.unitypackage /path/to/file.gz");
                 Console.WriteLine("  Options:");
                 Console.WriteLine("    -p | --print         Print the file comment and quit");
                 Console.WriteLine("    --version=xyz        Set the version of the package to xyz");
