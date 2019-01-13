@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>da0dba6d-2d60-4ed6-864a-9431d197d788</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>UPHELib</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)UPHLib\GzipLib\CompressionMethod.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UPHLib\GzipLib\GzipHeader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UPHLib\GzipLib\GzipHeaderFlags.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UPHLib\GzipLib\OsType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UPHLib\Libs\SimpleJSON.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UPHLib\UnityPackageHeader\UnityPackageHeader.cs" />
+  </ItemGroup>
+</Project>

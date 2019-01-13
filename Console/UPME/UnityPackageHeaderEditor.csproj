@@ -11,4 +11,6 @@
     <RootNamespace>UnityHeaderEditor</RootNamespace>
   </PropertyGroup>
 
+  <Import Project="..\..\UPHELib\UPHELib.projitems" Label="Shared" />
+
 </Project>

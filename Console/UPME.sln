@@ -4,7 +4,12 @@ VisualStudioVersion = 15.0.28010.2003
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnityPackageHeaderEditor", "UPME\UnityPackageHeaderEditor.csproj", "{CB5E034D-7235-4D54-95F8-E9D5643AD8A3}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "UPHELib", "..\UPHELib\UPHELib.shproj", "{DA0DBA6D-2D60-4ED6-864A-9431D197D788}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\UPHELib\UPHELib.projitems*{da0dba6d-2d60-4ed6-864a-9431d197d788}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
