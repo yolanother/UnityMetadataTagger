@@ -2,7 +2,8 @@
 UPHE is a small tool used to edit the package metadata of a *.unitypackage. With the tool you can add version, name, description or any other supported package header fields. The Unity Asset Manager uses title, description, and version number within its UI to make organizing assets easier.  Once version number, title, and id are set in your package the Asset Manager will start grouping these unitypackages into single entries instead of displaying multiple versions. This is also handy if you use a single file name and rely Dropbox file history for your personal unitypackages.
 
 ## Console Version
-```Usage: uphe (options) --file=/path/to/updated.unitypackage /path/to/file.gz
+```
+Usage: uphe (options) --file=/path/to/updated.unitypackage /path/to/file.gz
   Options:
     -p | --print         Print the file comment and quit
     --version=xyz        Set the version of the package to xyz
@@ -20,3 +21,6 @@ UPHE is a small tool used to edit the package metadata of a *.unitypackage. With
     --file=xyz           Set the path where the updated data will be written.
                              NOTE: the file names must not match
 ```
+
+Example tagging a unity package with a version number:
+uphe --version=1.0.0.0 --file=my-1.0.0.0.unitypackage my.unitypackage
