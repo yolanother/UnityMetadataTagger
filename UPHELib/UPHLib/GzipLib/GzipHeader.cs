@@ -1,51 +1,76 @@
-﻿using System;
+﻿/*
+ * The MIT License(MIT)
+ *
+ * Copyright(c) 2012-2017 Aaron Jackson
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ *
+ * gzip format
+ * Byte order: Little-endian
+ * Offset   Length   Contents
+ *   0      2 bytes  magic header  0x1f, 0x8b (\037 \213)
+ *   2      1 byte   compression method
+ *                      0: store (copied)
+ *                      1: compress
+ *                      2: pack
+ *                      3: lzh
+ *                      4..7: reserved
+ *                      8: deflate
+ *   3      1 byte   flags
+ *                      bit 0 set: file probably ascii text
+ *                      bit 1 set: continuation of multi-part gzip file, part number present
+ *                      bit 2 set: extra field present
+ *                      bit 3 set: original file name present
+ *                      bit 4 set: file comment present
+ *                      bit 5 set: file is encrypted, encryption header present
+ *                      bit 6,7:   reserved
+ *   4      4 bytes  file modification time in Unix format
+ *   8      1 byte   extra flags (depend on compression method)
+ *   9      1 byte   OS type
+ * [
+ *          2 bytes  optional part number (second part=1)
+ * ]?
+ * [
+ *          2 bytes  optional extra field length (e)
+ *         (e)bytes  optional extra field
+ * ]?
+ * [
+ *            bytes  optional original file name, zero terminated
+ * ]?
+ * [
+ *            bytes  optional file comment, zero terminated
+ * ]?
+ * [
+ *         12 bytes  optional encryption header
+ * ]?
+ *            bytes  compressed data
+ *          4 bytes  crc32
+ *          4 bytes  uncompressed input size modulo 2^32
+ */
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
 namespace UPHLib.GzipLib {
-    /**
-     *
-     * Offset   Length   Contents
-     * 0      2 bytes  magic header  0x1f, 0x8b (\037 \213)
-  2      1 byte   compression method
-                     0: store (copied)
-                     1: compress
-                     2: pack
-                     3: lzh
-                     4..7: reserved
-                     8: deflate
-  3      1 byte   flags
-                     bit 0 set: file probably ascii text
-                     bit 1 set: continuation of multi-part gzip file, part number present
-                     bit 2 set: extra field present
-                     bit 3 set: original file name present
-                     bit 4 set: file comment present
-                     bit 5 set: file is encrypted, encryption header present
-                     bit 6,7:   reserved
-  4      4 bytes  file modification time in Unix format
-  8      1 byte   extra flags (depend on compression method)
-  9      1 byte   OS type
-[
-         2 bytes  optional part number (second part=1)
-]?
-[
-         2 bytes  optional extra field length (e)
-        (e)bytes  optional extra field
-]?
-[
-           bytes  optional original file name, zero terminated
-]?
-[
-           bytes  optional file comment, zero terminated
-]?
-[
-        12 bytes  optional encryption header
-]?
-           bytes  compressed data
-         4 bytes  crc32
-         4 bytes  uncompressed input size modulo 2^32
-         **/
     public class GzipHeader {
         byte[] magic = new byte[2];
         public CompressionMethod compressionMethod;
